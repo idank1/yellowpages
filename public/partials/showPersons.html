@@ -6,7 +6,7 @@
       </div>
       <div class="results">
         <div class="cui__selector--direct title">
-          <h2 class="cui__selector--direct__title" ng-show="persons">
+          <h2 class="cui__selector--direct__title" ng-show="persons.length > 0">
             Search results
           </h2>                        
               {{presons}}
@@ -23,5 +23,8 @@
           </div>
         </div>
       </div>
+        <div class="footer">
+            <label ng-click="loadMoreResults()" ng-show="persons.length > 0">Load more results</label>
+        </div>
     </div>
 </body>

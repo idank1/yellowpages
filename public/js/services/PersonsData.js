@@ -1,5 +1,6 @@
 yellowPages.factory('PersonsData', ['$http', function($http) {
     const apiToken = '0d745ad3-75bf-45cd-a6c9-9d613c73f3db';
+    const serverName = 'http://eksercise-api.herokuapp.com';
     
     var getPerson = function(searchParams, callback) {
         console.log("searchparams-"+JSON.stringify(searchParams));
@@ -8,7 +9,7 @@ yellowPages.factory('PersonsData', ['$http', function($http) {
                 'X-KLARNA-TOKEN': apiToken,
                 'Content-Type': 'application/json'
             },
-            url: 'http://eksercise-api.herokuapp.com/people/search',
+            url: serverName+'/people/search',
             method: 'POST',
             params:searchParams        
         })
@@ -17,7 +18,6 @@ yellowPages.factory('PersonsData', ['$http', function($http) {
                 callback(data);
             }).error(function (data, status) {
                 console.log("error in getbusiness"+data);
-                callback(data);
             });
     };
     
@@ -29,17 +29,14 @@ yellowPages.factory('PersonsData', ['$http', function($http) {
                 'X-KLARNA-TOKEN': apiToken,
                'Content-Type': 'application/json'
             },
-            url: 'http://eksercise-api.herokuapp.com/people',
+            url: serverName+'/people',
             method: 'GET',
             params:{
                 searchRequestId: requestID    
             }
         })
             .success(function (data,status){
-                console.log("Query returned data-"+JSON.stringify(data));
-                console.log("Query returned status-"+status);
-                callback(data);
-            
+                callback(data);        
             }).error(function(data,status){
             
         });

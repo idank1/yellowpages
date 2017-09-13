@@ -1,15 +1,11 @@
 var express = require('express');
 var app=express();
 var http = require('http');
-//var bodyParser = require('body-parser');
 
 app.use('/js', express.static(__dirname + '/public/js'));
 
 app.use(express.static(__dirname + "/public"));
 app.use(express.static(__dirname + '/assets'));
-
-//app.use(bodyParser.urlencoded({limit: '50mb'}));
-//app.use(bodyParser.json({limit: '50mb'}));
 
 app.use(function(req, res, next) {
   res.contentType('text/html');
