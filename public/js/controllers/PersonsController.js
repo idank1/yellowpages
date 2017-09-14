@@ -1,4 +1,4 @@
-yellowPages.controller('PersonsCotroller', function($scope, PersonsData) {    
+yellowPages.controller('PersonsCotroller', function($scope, PersonsDataService) {    
     $scope.currentViewPage = 1;
     $scope.persons = [];
     $scope.nextPagePersons = [];
@@ -27,6 +27,7 @@ yellowPages.controller('PersonsCotroller', function($scope, PersonsData) {
             $scope.persons = persons;   
             $scope.searchParamaters['page']++;
             
+            // Get the results of the next page
             getPersons($scope.searchParamaters,function(nextPagePersons){
                 $scope.nextPagePersons = nextPagePersons;   
             });
@@ -47,16 +48,18 @@ yellowPages.controller('PersonsCotroller', function($scope, PersonsData) {
     }
     
     function getPersons(searchParamaters, callback){
-        PersonsData.getPerson(searchParamaters, function(data){
-            setTimeout(function(){
-                PersonsData.getPersonsFromQuery(data.id, function(persons){
-                    console.log("Persons data- "+JSON.stringify(persons));
-                    callback(calculatePersonsAge(persons));
-                });
-            }, 10000);
+        PersonsDataService.createPersonsQuery(searchParamaters, function(data){
+//            setTimeout(function(){
+//                PersonsDataService.getPersonsFromQuery(data.id, function(persons){
+//                    console.log("Persons data- "+JSON.stringify(persons));
+//                    callback(calculatePersonsAge(persons));
+//                });
+//            }, 10000);
 
-
-            console.log("data-"+JSON.stringify(data));
+            
+            PersonsDataService.getPersonsByQueryID(data.id, function(persons){
+                callback(calculatePersonsAge(persons));
+            });
         })
     }
 });
