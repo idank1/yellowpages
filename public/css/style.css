@@ -19,3 +19,13 @@
     right: 0;
     bottom: 0;
 }
+
+.results_footer{
+    margin-top: 25px;
+    text-align: center;
+}
+
+#persons-loading-spinner{
+    font-size:30px;
+    margin-left: 50%;
+}

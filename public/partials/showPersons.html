@@ -4,15 +4,14 @@
         <input ng-model="userSearchInput" class="cui__input__input" placeholder="Type your search query"/>
         <button type="button" class="cui__button--primary search-button" ng-click="searchPerson()">Search</button>    
       </div>
-      <div class="results">
+      <div class="results">          
         <div class="cui__selector--direct title">
           <h2 class="cui__selector--direct__title" ng-show="persons.length > 0">
             Search results
           </h2>                        
-              {{presons}}
-              <label ng-show="presons.length">No results found</label>
+          <i class="fa fa-spinner fa-spin" id="persons-loading-spinner" ng-show="isPageLoading"></i>
+          <label ng-show="(persons.length === 0 && isPageLoading === false)" class="cui__selector--direct__title">No persons found</label>
           <div class="cui__selector--direct__item" ng-repeat="currPerson in persons">
-
             <img class="user-avatar" ng-src="{{ currPerson.picture }}">
             <div class="cui__selector--direct__label">
                 {{ currPerson.name }} ({{ currPerson.age }}), {{ currPerson.phoneNumber }}
@@ -23,8 +22,8 @@
           </div>
         </div>
       </div>
-        <div class="footer">
-            <label ng-click="loadMoreResults()" ng-show="persons.length > 0">Load more results</label>
+        <div class="results_footer">
+            <label ng-click="loadMoreResults()" ng-show="persons.length > 0" class="cui__link">Load more</label>
         </div>
     </div>
 </body>

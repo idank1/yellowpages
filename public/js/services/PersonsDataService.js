@@ -1,69 +1,60 @@
-yellowPages.factory('PersonsDataService', ['$http', function($http) {
-    const apiToken = '0d745ad3-75bf-45cd-a6c9-9d613c73f3db',
-          proxyServer = 'https://cors-anywhere.herokuapp.com/',
-          serverName = 'http://eksercise-api.herokuapp.com',
-          createQueryURI = '/people/search',
-          getPersonsURI = '/people';
-    
-    var createPersonsQuery = function(searchParams, callback) {                        
-        $http({
-            headers:{
-                'X-KLARNA-TOKEN': apiToken,
-                'Content-Type': 'application/json'
-            },
-            url: proxyServer+serverName+createQueryURI,
-            method: 'POST',
-            params:searchParams        
-        })
-            .success(function (data,status,headers,config) {
-                callback(data);
-            }).error(function (data, status) {
-            });
+yellowPages.factory('PersonsDataService', ['CONSTATNS', '$http', function(CONSTATNS, $http) {  
+    var createPersonsQuery = function(createPersonQueryParams, callback) {
+        var headers = {
+            'X-KLARNA-TOKEN': CONSTATNS.KLARNA_API_TOKEN,
+            'Content-Type': 'application/json'
+        },
+            url = CONSTATNS.API_SERVER_ADDRESS + CONSTATNS.CREATE_PERSON_QUERY_URI,
+            method = 'POST',
+            parameters = createPersonQueryParams;
+        
+        executeURLUsingProxy(url,headers,method,parameters, function(response){
+            callback(response);
+        });
     };
             
     var getPersonsByQueryID = function(requestID, callback){
+        var headers = {
+            'X-KLARNA-TOKEN': CONSTATNS.KLARNA_API_TOKEN,
+            'Content-Type': 'application/json'
+        },
+            url = CONSTATNS.API_SERVER_ADDRESS + CONSTATNS.GET_PERSON_BY_QUERY_URI,
+            method = 'GET',
+            parameters = requestID;
+
+        (function doPoll(){
+            executeURLUsingProxy(url,headers,method,parameters, function(response){
+                // Check if the server is still processing, if so we will try again
+                if (response.statusCode === 102){
+                    setTimeout(doPoll(),1000);
+                }
+                else{                    
+                    callback(response);
+                }
+            });
+        })();    
+    };    
+    
+    function executeURLUsingProxy(url,headers,method,parameters, callback){        
         $http({
-            headers:{
-                'X-KLARNA-TOKEN': apiToken,
-                'Content-Type': 'application/json'
-            },
-            url: proxyServer+serverName+getPersonsURI,
+            url: CONSTATNS.PROXY_SERVER_ADDRESS + CONSTATNS.PROXY_EXECUTE_URL_URI,
             method: 'GET',
             params:{
-                searchRequestId: requestID    
-            }
+                'url':url,
+                'header':headers,
+                'method':method,
+                'parameters':parameters
+            }        
         })
-            .success(function (data,status){
-                callback(data);        
-            }).error(function(data,status){
-                console.log("Error!");            
+            .success(function (data,status) {
+                callback(data);
+            }).error(function (data, status) {
+                callback(data);
         });
-    };
+    }
     
     return {
         createPersonsQuery: createPersonsQuery,
         getPersonsByQueryID: getPersonsByQueryID
     }
-    
-    
-    //(function() {
-////    var cors_api_host = 'cors-anywhere.herokuapp.com';
-//    var cors_api_host = 'localhost';
-////    var cors_api_url = 'https://' + cors_api_host + '/';
-//    var cors_api_url = 'http://' + cors_api_host + ':3000/';
-//    var slice = [].slice;
-//    var origin = window.location.protocol + '//' + window.location.host;
-//    var open = XMLHttpRequest.prototype.open;
-//    XMLHttpRequest.prototype.open = function() {
-//        var args = slice.call(arguments);
-//        var targetOrigin = /^https?:\/\/([^\/]+)/i.exec(args[1]);
-//        if (targetOrigin && targetOrigin[0].toLowerCase() !== origin &&
-//            targetOrigin[1] !== cors_api_host) {
-//            args[1] = cors_api_url + args[1];
-////            console.log("args-"+args);
-//        }
-//        console.log("args- "+args);
-//        return open.apply(this, args);
-//    };
-//})();
 }]);

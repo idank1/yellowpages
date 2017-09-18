@@ -1,74 +1,90 @@
 yellowPages.controller('PersonsCotroller', function($scope, PersonsDataService) {    
-    $scope.currentViewPage = 1;
+    $scope.isPageLoading;
     $scope.persons = [];
     $scope.nextPagePersons = [];
-    $scope.searchParamaters = {};
+    $scope.createPersonQueryParams = {};
     
-    var searchParams = [{"paramName": "name", "regex": /[åäöÅÄÖA-Za-z_]+/g},
-                        {"paramName": "age", "regex": /[0-9]{1,3}/g},
-                        {"paramName": "phone", "regex": /([1-9]\d{1,4})(-)([1-9]\d{1,6})/g}];
+    var searchableParams = [{"paramName": "name", "regex": /[åäöÅÄÖA-Za-z_.]+[ åäöÅÄÖA-Za-z_.]+/g},
+                            {"paramName": "age", "regex": /\b[0-9]{1,3}\b/g},
+                            {"paramName": "phone", "regex": /([1-9]\d{1,4})(-)([1-9]\d{1,6})/g}];
          
     $scope.searchPerson = function(){
-        var userInput = $scope.userSearchInput;
+        var userSearchInput = $scope.userSearchInput;
+        $scope.createPersonQueryParams = {};        
+        $scope.createPersonQueryParams['page'] = 1;
         
-        $scope.searchParamaters['page'] = $scope.currentViewPage;
-        
-        if (userInput){
-            for (var currParam = 0; currParam < searchParams.length; currParam++){
-                var matchedParamValue = userInput.match(searchParams[currParam].regex);
-                
+        if (userSearchInput){
+            // Extracting the searchable paramters values from the user search query
+            searchableParams.map(currParam =>{
+                var matchedParamValue = userSearchInput.match(currParam.regex);                
+                        
                 if (matchedParamValue){
-                    $scope.searchParamaters[searchParams[currParam].paramName] = matchedParamValue;
+                    $scope.createPersonQueryParams[currParam.paramName] = matchedParamValue[0].trim();
                 }
-            }
-        }
-        
-        getPersons($scope.searchParamaters,function(persons){
-            $scope.persons = persons;   
-            $scope.searchParamaters['page']++;
+            });                                
+
+            $scope.isPageLoading = true;
             
-            // Get the results of the next page
-            getPersons($scope.searchParamaters,function(nextPagePersons){
-                $scope.nextPagePersons = nextPagePersons;   
-            });
-        });            
+            getPersons($scope.createPersonQueryParams,function(personsResponse){
+                $scope.persons = personsResponse;   
+                $scope.isPageLoading = false;
+                $scope.createPersonQueryParams['page']++;
+                
+                if ($scope.persons.length > 0){
+                    // Get the results of the next page for a fluent pagination
+                    getPersons($scope.createPersonQueryParams,function(nextPageResponse){
+                        $scope.nextPagePersons = nextPageResponse;   
+                    });
+                }
+            });          
+        }
+        else{
+            alert("Please enter a search query");
+        }
+  
     }
         
     $scope.loadMoreResults = function(){
         if ($scope.nextPagePersons.length > 0){
-            $scope.currentViewPage++;
-            $scope.searchParamaters['page']++;            
+            $scope.createPersonQueryParams['page']++;            
             $scope.persons = $scope.persons.concat($scope.nextPagePersons);
             $scope.nextPagePersons.length = 0;            
             
-            getPersons($scope.searchParamaters,function(nextPagePersons){
-                $scope.nextPagePersons = nextPagePersons;   
+            getPersons($scope.createPersonQueryParams,function(nextPageResponse){
+                $scope.nextPagePersons = nextPageResponse;   
             });
         }
     }
-    
-    function getPersons(searchParamaters, callback){
-        PersonsDataService.createPersonsQuery(searchParamaters, function(data){
-//            setTimeout(function(){
-//                PersonsDataService.getPersonsFromQuery(data.id, function(persons){
-//                    console.log("Persons data- "+JSON.stringify(persons));
-//                    callback(calculatePersonsAge(persons));
-//                });
-//            }, 10000);
-
+        
+    function getPersons(createPersonQueryParams, callback){
+        var persons = [];
+        
+        PersonsDataService.createPersonsQuery(createPersonQueryParams, function(createQueryResponse){
+            // Check if the query creation succeed
+            if (createQueryResponse.statusCode === 201){
+                var getPersonByQueryParams = {"searchRequestId":JSON.parse(createQueryResponse.body).id};
             
-            PersonsDataService.getPersonsByQueryID(data.id, function(persons){
-                callback(calculatePersonsAge(persons));
-            });
+                // Getting the persons using the search request id
+                PersonsDataService.getPersonsByQueryID(getPersonByQueryParams, function(getPersonsResponse){
+                    if(getPersonsResponse.statusCode === 200){ 
+                        persons = JSON.parse(getPersonsResponse.body);
+                        
+                        // Calculating the age of each person using the birthday epoch time
+                        persons.map(person => {
+                            person.age = Math.floor((Date.now() - (person.birthday * 1000)) / (1000 * 60 * 60 * 24 * 365));                                                    
+                        });
+                    }
+                    else{
+                        alert("Error occurred while receiving persons details");        
+                    }
+                    
+                    callback(persons);
+                });
+            }
+            else{
+                alert("Error occurred while creating the search query");
+                callback(persons);
+            }                            
         })
     }
 });
-
-function calculatePersonsAge(persons, callback){
-    for (var person = 0; person < persons.length; person++){
-        // Calculate the age from the birth date
-        persons[person].age = Math.floor(((new Date()).getTime() - persons[person].birthday) / (1000 * 60 * 60 * 24 * 365));
-    }
-
-    return persons;
-}    
