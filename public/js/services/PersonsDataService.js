@@ -1,7 +1,6 @@
 yellowPages.factory('PersonsDataService', ['CONSTATNS', '$http', function(CONSTATNS, $http) {  
     var createPersonsQuery = function(createPersonQueryParams, callback) {
         var headers = {
-            'X-KLARNA-TOKEN': CONSTATNS.KLARNA_API_TOKEN,
             'Content-Type': 'application/json'
         },
             url = CONSTATNS.API_SERVER_ADDRESS + CONSTATNS.CREATE_PERSON_QUERY_URI,
@@ -15,7 +14,6 @@ yellowPages.factory('PersonsDataService', ['CONSTATNS', '$http', function(CONSTA
             
     var getPersonsByQueryID = function(requestID, callback){
         var headers = {
-            'X-KLARNA-TOKEN': CONSTATNS.KLARNA_API_TOKEN,
             'Content-Type': 'application/json'
         },
             url = CONSTATNS.API_SERVER_ADDRESS + CONSTATNS.GET_PERSON_BY_QUERY_URI,

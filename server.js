@@ -14,7 +14,7 @@ app.use(function(req, res, next) {
 });
 
 app.use('/api/executeurl', function(req, res){    
-    require('./server_modules/proxyAPIService.js')(req,res);
+    require('./server_modules/yellowpagesProxy.js')(req,res);
 });
     
 app.all('/*', function(req, res, next) {
